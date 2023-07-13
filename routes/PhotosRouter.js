@@ -29,7 +29,7 @@ const upload = multer({
 });
 
 PhotosRouter.route("/").get((request, response) => {
-  db.photo
+  db.Photos
     .findAll()
     .then((photos) => {
       console.log("GET IMAGES");
@@ -44,7 +44,7 @@ PhotosRouter.route("/")
 .post(upload.single("photo"), (request, response) => {
     const title = request.body.title;
     const mediaLocation = request.file.filename;
-    db.photo
+    db.Photos
       .create({ title: title, mediaLocation: mediaLocation })
       .then((photo) => {
         console.log("POST IMAGES");
@@ -68,7 +68,7 @@ PhotosRouter.route("/")
 PhotosRouter.route("/:id") // for removing photos
   .delete((request, response) => {
     const id = request.params.id;
-    db.photo
+    db.Photos
       .destroy({ where: { id: id } })
       .then((photo) => {
         response.send("Deleted");
