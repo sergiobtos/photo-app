@@ -3,6 +3,9 @@
 <%- include('partials/navbar') %>
         <!-- Main -->
   <div class="container">
+    <% if (data) { %>
+      <%= "Wrong Credentials" %>
+    <% } %>
     <h1>Log in</h1>
     <form action="/users/login" method="POST" Content-Type="multipart/form-data">
       <div class="control-group">

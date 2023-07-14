@@ -8,43 +8,53 @@ UsersRouter.use(bodyParser.json());
 const bcrypt = require("bcryptjs");
 const saltRounds = 10;
 
-UsersRouter.route('/login')
-.post((request, response)=>{
-    const password = request.body.password
-    const username = request.body.username
-    db.User.findOne({where:{username: username, password: password}})
-        .then(async(user)=>{
-            if(user) {
-                bcrypt.compare(user.password, password, (error, result)=>{
-                  if(result) {
-                    console.log('logged in, user id = ', user.id)
-                    response.redirect('/');
-                  } else {
-                    response.redirect('/login');
-                  }  
-                })
+UsersRouter.route("/login").post(async (request, response) => {
+    // username and password are required
+    const username = request?.body?.username;
+    const password = request?.body?.password;
+    db.user
+      .findOne({ where: { username: username } })
+      .then(async (user) => {
+        if (user) {
+          bcrypt.compare(password, user.password, (error, same) => {
+            if (same) {
+              request.session.userId = user.id; 
+              response.redirect("/");
+            } else {
+              //alert("Wrong Password")
+              response.redirect("/login");
             }
-        response.send(user)
-    }).catch(err=>{
-        response.send('You don\'t have an account. Try signing up!')
-    })
-})
+          });
+        }
+        else {
+          response.status(401)
+          console.log("401 error")
+          response.redirect("/badlogin")
+        }
+      })
+      .catch((error) => {
+        console.log("this fired", error);
+        response.send(error);
+      });
+  });
 
-UsersRouter.route('/signUp')
-.post(async(request, response)=>{
-    // email, password, username
-    const email = request.body.email[0]
-    const password = request.body.password
-    const encryptedPwd = await bcrypt.hash(password, saltRounds);
-    const username = request.body.username
-
-    db.User.create({email: email, password: encryptedPwd, username: username}).then(user=>{
-      //response.send(user)
-      response.redirect('/login');
-    }).catch((err)=>{
-        console.log(err)
-        response.send('You don\'t have an account. Try signing up');
-    })
-})
+UsersRouter.route("/signUp").post(async (request, response) => {
+  const password = request.body.password;
+  const encryptedPassword = await bcrypt.hash(password, saltRounds);
+  // email, password, username
+  const email = request.body.email;
+  const username = request.body.username;
+//   console.log(encryptedPassword)
+  db.user
+    .create({ email: email[0], password: encryptedPassword, username: username })
+      //response.send(user) // changed in chapter 7.2
+      .then((user) => {
+        //response.send(user) // changed in chapter 7.2
+        response.redirect("/login");
+      })
+      .catch((err) => {
+        err;
+      });
+  });
 
 module.exports = UsersRouter;

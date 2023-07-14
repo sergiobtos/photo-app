@@ -13,52 +13,26 @@ let sequelize;
 if (config.use_env_variable) {
   sequelize = new Sequelize(process.env[config.use_env_variable], config);
 } else {
-  sequelize = new Sequelize(config.database, config.username, config.password, {
-    host: 'localhost',
-    dialect: 'mariadb',
-  });
+  sequelize = new Sequelize(config.database, config.username, config.password, config);
 }
 
-sequelize.authenticate()
-    .then(() => {
-        console.log('connection established');
-    })
-    .catch(err => {
-        console.log(err);
-    });
+fs
+  .readdirSync(__dirname)
+  .filter(file => {
+    return (file.indexOf('.') !== 0) && (file !== basename) && (file.slice(-3) === '.js');
+  })
+  .forEach(file => {
+    const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
+    db[model.name] = model;
+  });
 
-db.Comments = require('./CommentsModel')(sequelize, Sequelize.DataTypes);
-db.User = require('./UsersModel')(sequelize, Sequelize.DataTypes);
-db.Photos = require('./PhotosModel')(sequelize, Sequelize.DataTypes);
-
-// fs
-//   .readdirSync(__dirname)
-//   .filter(file => {
-//     return (
-//       file.indexOf('.') !== 0 &&
-//       file !== basename &&
-//       file.slice(-3) === '.js' &&
-//       file.indexOf('.test.js') === -1
-//     );
-//   })
-//   .forEach(file => {
-//     const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
-//     db[model.name] = model;
-//   });
-
-// Object.keys(db).forEach(modelName => {
-//   if (db[modelName].associate) {
-//     db[modelName].associate(db);
-//   }
-// });
-// console.log('Sergio:', db);
+Object.keys(db).forEach(modelName => {
+  if (db[modelName].associate) {
+    db[modelName].associate(db);
+  }
+});
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
-
-db.sequelize.sync({force: false})
-  .then(() => {
-    console.log('Sync done');
-  });
 
 module.exports = db;

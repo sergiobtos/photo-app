@@ -13,9 +13,7 @@ const fileStorageEngine = multer.diskStorage({
 });
 
 const uploadFilter = function (request, file, callback) {
-    
     const fileType = file.mimetype.split('/');
-    
     if (fileType[0] === "image") {
       callback(null, true)
     }else{
@@ -29,7 +27,7 @@ const upload = multer({
 });
 
 PhotosRouter.route("/").get((request, response) => {
-  db.Photos
+  db.photo
     .findAll()
     .then((photos) => {
       console.log("GET IMAGES");
@@ -44,7 +42,7 @@ PhotosRouter.route("/")
 .post(upload.single("photo"), (request, response) => {
     const title = request.body.title;
     const mediaLocation = request.file.filename;
-    db.Photos
+    db.photo
       .create({ title: title, mediaLocation: mediaLocation })
       .then((photo) => {
         console.log("POST IMAGES");
@@ -68,7 +66,7 @@ PhotosRouter.route("/")
 PhotosRouter.route("/:id") // for removing photos
   .delete((request, response) => {
     const id = request.params.id;
-    db.Photos
+    db.photo
       .destroy({ where: { id: id } })
       .then((photo) => {
         response.send("Deleted");
